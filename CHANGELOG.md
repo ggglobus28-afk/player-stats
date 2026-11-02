@@ -3,10 +3,11 @@
 ## 1.2.1
 
 - Chat tab shows kill pairs only; chat totem rows and the related setting were
-  removed.
+  removed. Chat parsing now ignores totem messages entirely.
 - The default theme now matches the vanilla statistics screen.
 - The other themes restyle all mod widgets, including buttons.
 - Existing theme choices are migrated to the new theme list.
+- Statistics are written at most once every 10 seconds to reduce disk I/O.
 
 ## 1.2.0
 

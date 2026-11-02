@@ -12,26 +12,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Reads kill feed and totem messages out of the chat. Everything is matched
- * locally with a handful of permissive regular expressions, so it works on
- * vanilla servers and on most PvP servers without any configuration.
+ * Reads kill messages out of the chat. Everything is matched locally with a
+ * handful of permissive regular expressions, so it works on vanilla servers and
+ * on most PvP servers without any configuration.
  */
 public final class ChatParser {
-	/** A recognised chat message. {@code attacker} may be null for solo totems. */
-	public record Match(boolean totem, String attacker, String victim) {
+	/** A recognised chat message. */
+	public record Match(String killer, String victim) {
 	}
 
 	private record Rule(Pattern pattern, int victimGroup, int killerGroup) {
 	}
 
-	private record TotemRule(Pattern pattern, int playerGroup, int otherGroup) {
-	}
-
 	private static final String NAME = "([A-Za-z0-9_]{3,16})";
 
 	private static final List<Rule> KILLS = new ArrayList<>();
-	private static final List<TotemRule> TOTEM_PAIRS = new ArrayList<>();
-	private static final List<TotemRule> TOTEM_SOLO = new ArrayList<>();
 
 	private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
 		"was", "has", "had", "been", "the", "and", "for", "you", "not", "but", "all", "any",
@@ -71,20 +66,6 @@ public final class ChatParser {
 		kill("\\b" + NAME + "\\s+был\\s+(?:убит|застрелен|заколот|подорван|забит|сраж[её]н)\\s+(?:игроком\\s+)?" + NAME, 1, 2);
 		kill("\\b" + NAME + "\\s+убит\\s+(?:игроком\\s+)?" + NAME, 1, 2);
 		kill("\\b" + NAME + "\\s+проиграл\\s+в\\s+бою\\s+с\\s+" + NAME, 1, 2);
-
-		// Totem messages that name both players.
-		totemPair("\\b" + NAME + "'s\\s+totem\\s+(?:was\\s+)?(?:popped|broken|destroyed)\\s+by\\s+" + NAME, 1, 2);
-		totemPair("\\b" + NAME + "\\s+popped\\s+" + NAME + "'s\\s+totem", 2, 1);
-		totemPair("\\b" + NAME + "\\s+снял\\s+тотем\\s+с\\s+" + NAME, 2, 1);
-
-		// Totem messages with a single player.
-		totemSolo("\\b" + NAME + "\\s+used\\s+a\\s+totem\\s+of\\s+undying", 1);
-		totemSolo("\\b" + NAME + "\\s+popped\\s+a\\s+totem", 1);
-		totemSolo("\\b" + NAME + "'s\\s+totem\\s+(?:of\\s+undying\\s+)?(?:activated|popped|saved)", 1);
-		totemSolo("\\b" + NAME + "\\s+activated\\s+(?:a\\s+|their\\s+)?totem", 1);
-		totemSolo("\\b" + NAME + "\\s+использовал\\s+тотем", 1);
-		totemSolo("\\b" + NAME + "\\s+активировал\\s+тотем", 1);
-		totemSolo("\\b" + NAME + "\\s+спас(?:ся|лась)?\\s+(?:с\\s+помощью\\s+)?тотем", 1);
 	}
 
 	private ChatParser() {
@@ -94,17 +75,9 @@ public final class ChatParser {
 		KILLS.add(new Rule(Pattern.compile(regex, Pattern.CASE_INSENSITIVE), victimGroup, killerGroup));
 	}
 
-	private static void totemPair(String regex, int playerGroup, int otherGroup) {
-		TOTEM_PAIRS.add(new TotemRule(Pattern.compile(regex, Pattern.CASE_INSENSITIVE), playerGroup, otherGroup));
-	}
-
-	private static void totemSolo(String regex, int playerGroup) {
-		TOTEM_SOLO.add(new TotemRule(Pattern.compile(regex, Pattern.CASE_INSENSITIVE), playerGroup, -1));
-	}
-
 	/**
-	 * Pure text matching. Returns null when the line is not a kill or totem
-	 * message. Never touches the game, which also makes it easy to test.
+	 * Pure text matching. Returns null when the line is not a kill message.
+	 * Never touches the game, which also makes it easy to test.
 	 */
 	public static Match parse(String raw) {
 		if (raw == null) {
@@ -114,8 +87,7 @@ public final class ChatParser {
 		if (text.isEmpty() || text.length() > 512) {
 			return null;
 		}
-		Match totem = parseTotem(text);
-		return totem != null ? totem : parseKill(text);
+		return parseKill(text);
 	}
 
 	/** Feeds one chat line into the parser. */
@@ -128,41 +100,9 @@ public final class ChatParser {
 		if (mc.level == null || mc.player == null) {
 			return;
 		}
-		Settings settings = StatsStore.settings();
-		if (match.totem()) {
-			if (settings.chatTotems) {
-				StatsStore.get().recordChatTotem(match.attacker(), match.victim());
-			}
-		} else if (settings.chatKills) {
-			StatsStore.get().recordChatKill(match.attacker(), match.victim());
+		if (StatsStore.settings().chatKills) {
+			StatsStore.get().recordChatKill(match.killer(), match.victim());
 		}
-	}
-
-	private static Match parseTotem(String text) {
-		for (TotemRule rule : TOTEM_PAIRS) {
-			Matcher matcher = rule.pattern().matcher(text);
-			if (!matcher.find()) {
-				continue;
-			}
-			String player = matcher.group(rule.playerGroup());
-			String other = matcher.group(rule.otherGroup());
-			if (!valid(player) || !valid(other) || player.equalsIgnoreCase(other)) {
-				continue;
-			}
-			return new Match(true, other, player);
-		}
-		for (TotemRule rule : TOTEM_SOLO) {
-			Matcher matcher = rule.pattern().matcher(text);
-			if (!matcher.find()) {
-				continue;
-			}
-			String player = matcher.group(rule.playerGroup());
-			if (!valid(player)) {
-				continue;
-			}
-			return new Match(true, null, player);
-		}
-		return null;
 	}
 
 	private static Match parseKill(String text) {
@@ -176,7 +116,7 @@ public final class ChatParser {
 			if (!valid(victim) || !valid(killer) || victim.equalsIgnoreCase(killer)) {
 				continue;
 			}
-			return new Match(false, killer, victim);
+			return new Match(killer, victim);
 		}
 		return null;
 	}

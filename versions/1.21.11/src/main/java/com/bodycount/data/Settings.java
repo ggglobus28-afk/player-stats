@@ -8,7 +8,6 @@ public final class Settings {
 	public boolean trackTotems = true;
 	public boolean trackKills = true;
 	public boolean chatKills = true;
-	public boolean chatTotems = true;
 	public boolean showIcons = true;
 	public boolean compactRows = false;
 	public boolean colorValues = true;

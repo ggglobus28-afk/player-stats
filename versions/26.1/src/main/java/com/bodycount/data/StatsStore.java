@@ -33,7 +33,7 @@ import java.util.UUID;
 public final class StatsStore {
 	private static final StatsStore INSTANCE = new StatsStore();
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	private static final long SAVE_INTERVAL_MS = 2000L;
+	private static final long SAVE_INTERVAL_MS = 10000L;
 
 	public enum Kind {
 		TOTEM,
@@ -630,27 +630,6 @@ public final class StatsStore {
 			pair.aKillsB++;
 		} else {
 			pair.bKillsA++;
-		}
-		pair.lastSeen = System.currentTimeMillis();
-		this.markDirty();
-	}
-
-	/** A totem message from chat. {@code attacker} may be null. */
-	public void recordChatTotem(String attacker, String victim) {
-		if (!this.data.settings.chatTotems) {
-			return;
-		}
-		if (victim == null || victim.isBlank()) {
-			return;
-		}
-		String other = attacker == null || attacker.isBlank() || attacker.equalsIgnoreCase(victim) ? "" : attacker;
-		ServerEntry entry = this.ensureCurrent(Minecraft.getInstance());
-		ChatPair pair = pair(entry.chatTotems, victim, other);
-		// aTotemsB counts "a popped a totem from b", so credit the attacker.
-		if (pair.a.equalsIgnoreCase(other)) {
-			pair.aTotemsB++;
-		} else {
-			pair.bTotemsA++;
 		}
 		pair.lastSeen = System.currentTimeMillis();
 		this.markDirty();
