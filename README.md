@@ -1,4 +1,4 @@
-# Player Stats
+# BodyCount
 
 Client-side **Fabric** mod that adds a fourth tab to Minecraft's statistics screen.
 It counts, per player, **kills / deaths** and **totems popped / lost**, reads kill
@@ -11,8 +11,7 @@ No server installation required. The mod only counts what your client can see.
 
 ## Возможности
 
-- **Одна вкладка «Игроки»** — на каждого игрока сразу видно:
-  `Убил / Умер` и `Снял тотем / Сняли тотем`.
+- **Одна вкладка «Игроки»** — статистика по каждому игроку.
 - **Вкладка «Чат»** — пары игроков из сообщений чата: кто кого убил и сколько раз,
   кто с кого снял тотем. Работает с ванильными сообщениями и типовыми форматами
   PvP-плагинов, на русском и английском.
@@ -29,9 +28,9 @@ No server installation required. The mod only counts what your client can see.
 
 | Minecraft | Jar | Java | Fabric Loader |
 |---|---|---|---|
-| 1.21.11 | `playerstats-*-mc1.21.11.jar` | 21+ | 0.16+ |
-| 26.1 / 26.1.1 / 26.1.2 | `playerstats-*-mc26.1.jar` | 25+ | 0.19.5+ |
-| 26.2 / 26.3 | `playerstats-*-mc26.2-26.3.jar` | 25+ | 0.19.5+ |
+| 1.21.11 | `bodycount-*-mc1.21.11.jar` | 21+ | 0.16+ |
+| 26.1 / 26.1.1 / 26.1.2 | `bodycount-*-mc26.1.jar` | 25+ | 0.19.5+ |
+| 26.2 / 26.3 | `bodycount-*-mc26.2-26.3.jar` | 25+ | 0.19.5+ |
 
 В `mods` кладите **только один** jar — под свою версию игры.
 Fabric API не требуется.
@@ -42,11 +41,13 @@ Fabric API не требуется.
 2. Положите подходящий jar в папку `mods`.
 3. Запустите игру: **Esc → Статистика → Игроки**.
 
+Если раньше стоял Player Stats — удалите его jar, это тот же мод.
+
 ## Где хранятся данные
 
 ```
 .minecraft/config/totems.txt        вся статистика, обычный текст
-.minecraft/config/playerstats.json  только настройки (JSON)
+.minecraft/config/bodycount.json    только настройки (JSON)
 ```
 
 Формат `totems.txt`:
@@ -84,8 +85,7 @@ cd versions/26.2-26.3     # или versions/26.1, versions/1.21.11
 - `versions/26.1`, `versions/26.2-26.3` — `net.fabricmc.fabric-loom` (no-remap),
   официальные имена Mojang.
 
-Нужен JDK 21 для 1.21.11 и JDK 25 для 26.x. Сборка офлайн не обязательна,
-Loom сам скачает зависимости.
+Нужен JDK 21 для 1.21.11 и JDK 25 для 26.x.
 
 ## Структура репозитория
 
@@ -97,7 +97,7 @@ CHANGELOG.md          история версий
 LICENSE               MIT
 ```
 
-Исходники общие: пакет `com.playerstats` (`data`, `ui`, `mixin`).
+Исходники общие: пакет `com.bodycount` (`data`, `ui`, `mixin`).
 
 ## Ограничения
 

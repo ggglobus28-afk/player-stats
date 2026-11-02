@@ -9,4 +9,4 @@ pluginManagement {
 	}
 }
 
-rootProject.name = 'playerstats-1.21.11'
+rootProject.name = 'bodycount-1.21.11'

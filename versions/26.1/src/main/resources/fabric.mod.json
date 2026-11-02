@@ -1,18 +1,18 @@
 {
 	"schemaVersion": 1,
-	"id": "playerstats",
+	"id": "bodycount",
 	"version": "${version}",
-	"name": "Player Stats",
+	"name": "BodyCount",
 	"description": "Adds a fourth tab to the statistics screen: per-player totem pops, kills and deaths, chat based kill/totem pairs, a server profile manager and a settings screen with themes. Client side only: it counts the events your client can see.",
 	"authors": ["ggglobus228"],
 	"license": "MIT",
 	"environment": "client",
 	"entrypoints": {
-		"client": ["com.playerstats.PlayerStatsMod"]
+		"client": ["com.bodycount.BodyCountMod"]
 	},
 	"mixins": [
 		{
-			"config": "playerstats.mixins.json",
+			"config": "bodycount.mixins.json",
 			"environment": "client"
 		}
 	],
