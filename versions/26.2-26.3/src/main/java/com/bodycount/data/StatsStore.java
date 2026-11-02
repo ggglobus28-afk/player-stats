@@ -148,14 +148,6 @@ public final class StatsStore {
 			return total;
 		}
 
-		public int chatTotemsTotal() {
-			int total = 0;
-			for (ChatPair pair : this.chatTotems.values()) {
-				total += pair.aTotemsB + pair.bTotemsA;
-			}
-			return total;
-		}
-
 		public void mergeFrom(ServerEntry other) {
 			if (other == null) {
 				return;

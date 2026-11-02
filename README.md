@@ -37,6 +37,13 @@ Install one jar only, matching the game version. Fabric API is not required.
 Earlier builds were named Player Stats. Remove the old jar before installing
 BodyCount; both register the same mod.
 
+## Disclaimer
+
+Not an official Minecraft product. Not approved by or associated with Mojang
+Studios or Microsoft.
+
+Official downloads are published on Modrinth and GitHub Releases only.
+
 ## License
 
 MIT © ggglobus228

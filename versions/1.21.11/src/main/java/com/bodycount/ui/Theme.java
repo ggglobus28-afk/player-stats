@@ -17,7 +17,6 @@ public final class Theme {
 	private static final int[] SELECTED = {0x30FFFFFF, 0x5000C8FF, 0x500078D7, 0x7000FF88, 0x70FF9800};
 	private static final int[] HOVER = {0x20FFFFFF, 0x30FFFFFF, 0x20000000, 0x3000FF88, 0x30FFC400};
 	private static final int[] DIVIDER = {0x30808080, 0x60FFFFFF, 0x40000000, 0x6000FFC8, 0x60FFC400};
-	private static final int[] ACCENT = {0xFFFFFFFF, 0xFF00C8FF, 0xFF0078D7, 0xFF00FF88, 0xFFFFC400};
 	private static final int[] GOOD = {0xFF55FF55, 0xFF66FF88, 0xFF2E7D32, 0xFF00FF88, 0xFFFFD54F};
 	private static final int[] BAD = {0xFFFF5555, 0xFFFF6666, 0xFFC62828, 0xFFFF4466, 0xFFFF7043};
 	private static final int[] TOOLTIP_BG = {0xF0100010, 0xF0101010, 0xF0F5F5F5, 0xF0000C12, 0xF0140E00};
@@ -74,10 +73,6 @@ public final class Theme {
 
 	public static int divider() {
 		return pick(DIVIDER);
-	}
-
-	public static int accent() {
-		return pick(ACCENT);
 	}
 
 	public static int good() {

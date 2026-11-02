@@ -34,7 +34,6 @@ public class BodyCountTab extends GridLayoutTab {
 		private final String b;
 		private int killsAB;
 		private int killsBA;
-		private long lastSeen;
 
 		private MergedPair(String a, String b) {
 			this.a = a;
@@ -236,7 +235,6 @@ public class BodyCountTab extends GridLayoutTab {
 				key -> new MergedPair(safe(pair.a), safe(pair.b)));
 			target.killsAB += pair.aKillsB;
 			target.killsBA += pair.bKillsA;
-			target.lastSeen = Math.max(target.lastSeen, pair.lastSeen);
 		}
 
 		List<MergedPair> pairs = new ArrayList<>(merged.values());
