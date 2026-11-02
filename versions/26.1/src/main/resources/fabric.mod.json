@@ -6,9 +6,11 @@
 	"description": "Adds a fourth tab to the statistics screen: per-player totem pops, kills and deaths, chat based kill/totem pairs, a server profile manager and a settings screen with themes. Client side only: it counts the events your client can see.",
 	"authors": ["ggglobus228"],
 	"license": "MIT",
+	"icon": "assets/bodycount/icon.png",
 	"environment": "client",
 	"entrypoints": {
-		"client": ["com.bodycount.BodyCountMod"]
+		"client": ["com.bodycount.BodyCountMod"],
+		"modmenu": ["com.bodycount.compat.ModMenuIntegration"]
 	},
 	"mixins": [
 		{
@@ -20,5 +22,13 @@
 		"fabricloader": ">=0.19.5",
 		"minecraft": ">=26.1 <26.2",
 		"java": ">=25"
+	},
+	"suggests": {
+		"modmenu": "*"
+	},
+	"custom": {
+		"modmenu": {
+			"badges": ["client"]
+		}
 	}
 }

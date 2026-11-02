@@ -36,3 +36,9 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_21
 	targetCompatibility = JavaVersion.VERSION_21
 }
+
+
+// The Mod Menu API stubs are only needed at compile time.
+tasks.withType(Jar).configureEach {
+	exclude 'com/terraformersmc/**'
+}

@@ -22,6 +22,8 @@ No server installation required. The mod only counts what your client can see.
   иконки предметов, компактные строки, цветные значения, скрытие пустых строк.
 - **Текстовое хранилище** — вся статистика лежит в обычном
   `config/totems.txt`, который можно открыть Блокнотом и править руками.
+- **Mod Menu** — если он установлен, настройки BodyCount открываются прямо
+  из списка модов. Без Mod Menu мод работает как обычно.
 - Локализация: русский и английский.
 
 ## Поддерживаемые версии
@@ -33,7 +35,7 @@ No server installation required. The mod only counts what your client can see.
 | 26.2 / 26.3 | `bodycount-*-mc26.2-26.3.jar` | 25+ | 0.19.5+ |
 
 В `mods` кладите **только один** jar — под свою версию игры.
-Fabric API не требуется.
+Fabric API не требуется. Mod Menu — по желанию.
 
 ## Установка
 
@@ -114,7 +116,8 @@ LICENSE               MIT
 Client-side Fabric mod that adds a fourth tab to the statistics screen: per-player
 kills/deaths and totems popped/lost, chat-based kill/totem pairs, per-server
 profiles, themes and settings. All statistics are stored in a readable text file
-`config/totems.txt`. Supports Minecraft 1.21.11, 26.1.x and 26.2/26.3.
+`config/totems.txt`. Optional Mod Menu integration opens the settings screen from
+the mod list. Supports Minecraft 1.21.11, 26.1.x and 26.2/26.3.
 
 ## Лицензия
 

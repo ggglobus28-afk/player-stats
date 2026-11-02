@@ -14,11 +14,13 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 /**
- * Small vanilla-looking scrolling list: one icon, a name on the left and a
- * value on the right per row. Used for players, chat pairs and server profiles.
+ * Small scrolling list used for players, chat pairs and server profiles.
+ * A row can carry an optional second line (for example the totem counters
+ * shown under the player name).
  */
 public class StatsListWidget extends AbstractWidget {
 	public static final int ROW_HEIGHT = 22;
+	public static final int TALL_ROW_HEIGHT = 30;
 	public static final int COMPACT_ROW_HEIGHT = 18;
 	private static final int HEADER_HEIGHT = 16;
 	private static final int PADDING = 4;
@@ -29,21 +31,32 @@ public class StatsListWidget extends AbstractWidget {
 		public final ItemStack icon;
 		public final List<Component> tooltip;
 		public final int valueColor;
+		public final Component subtitle;
 
 		public Row(Component name, Component value, ItemStack icon) {
-			this(name, value, icon, List.of(), 0);
+			this(name, value, icon, List.of(), 0, null);
 		}
 
 		public Row(Component name, Component value, ItemStack icon, List<Component> tooltip) {
-			this(name, value, icon, tooltip, 0);
+			this(name, value, icon, tooltip, 0, null);
 		}
 
 		public Row(Component name, Component value, ItemStack icon, List<Component> tooltip, int valueColor) {
+			this(name, value, icon, tooltip, valueColor, null);
+		}
+
+		public Row(Component name, Component value, ItemStack icon, List<Component> tooltip, int valueColor,
+				Component subtitle) {
 			this.name = name;
 			this.value = value;
 			this.icon = icon;
 			this.tooltip = tooltip == null ? List.of() : tooltip;
 			this.valueColor = valueColor;
+			this.subtitle = subtitle;
+		}
+
+		private boolean hasSubtitle() {
+			return this.subtitle != null && !this.subtitle.getString().isEmpty();
 		}
 	}
 
@@ -51,6 +64,7 @@ public class StatsListWidget extends AbstractWidget {
 	private Component headerLeft = Component.empty();
 	private Component headerRight = Component.empty();
 	private Component emptyText = Component.empty();
+	private boolean tall;
 	private int scroll;
 	private int selected = -1;
 	private IntConsumer onSelect;
@@ -59,15 +73,27 @@ public class StatsListWidget extends AbstractWidget {
 		super(x, y, width, height, Component.empty());
 	}
 
-	private static int rowHeight() {
-		return StatsStore.settings() != null && StatsStore.settings().compactRows
-			? COMPACT_ROW_HEIGHT
-			: ROW_HEIGHT;
+	private static boolean compact() {
+		return StatsStore.settings() != null && StatsStore.settings().compactRows;
+	}
+
+	private int rowHeight() {
+		if (compact()) {
+			return COMPACT_ROW_HEIGHT;
+		}
+		return this.tall ? TALL_ROW_HEIGHT : ROW_HEIGHT;
 	}
 
 	public void setRows(List<Row> newRows) {
 		this.rows.clear();
 		this.rows.addAll(newRows);
+		this.tall = false;
+		for (Row row : newRows) {
+			if (row.hasSubtitle()) {
+				this.tall = true;
+				break;
+			}
+		}
 		if (this.selected >= this.rows.size()) {
 			this.selected = -1;
 		}
@@ -100,7 +126,7 @@ public class StatsListWidget extends AbstractWidget {
 	}
 
 	private int contentHeight() {
-		return this.rows.size() * rowHeight();
+		return this.rows.size() * this.rowHeight();
 	}
 
 	private int visibleHeight() {
@@ -135,8 +161,9 @@ public class StatsListWidget extends AbstractWidget {
 		graphics.enableScissor(left, listTop, right, bottom);
 
 		Row hoveredRow = null;
-		int rowHeight = rowHeight();
+		int rowHeight = this.rowHeight();
 		boolean icons = StatsStore.settings() == null || StatsStore.settings().showIcons;
+		boolean twoLines = this.tall && !compact();
 
 		if (this.rows.isEmpty()) {
 			graphics.centeredText(font, this.emptyText, (left + right) / 2, listTop + 14, Theme.header());
@@ -160,11 +187,18 @@ public class StatsListWidget extends AbstractWidget {
 					graphics.item(row.icon, left + PADDING, rowTop + (rowHeight - 16) / 2);
 					textLeft += 20;
 				}
-				int textY = rowTop + (rowHeight - 8) / 2;
-				graphics.text(font, row.name, textLeft, textY, Theme.text(), false);
-				int width = font.width(row.value);
 				int valueColor = row.valueColor == 0 ? Theme.value() : row.valueColor;
-				graphics.text(font, row.value, right - PADDING - width, textY, valueColor, false);
+				int valueWidth = font.width(row.value);
+
+				if (twoLines && row.hasSubtitle()) {
+					graphics.text(font, row.name, textLeft, rowTop + 5, Theme.text(), false);
+					graphics.text(font, row.subtitle, textLeft, rowTop + 17, Theme.header(), false);
+					graphics.text(font, row.value, right - PADDING - valueWidth, rowTop + 11, valueColor, false);
+				} else {
+					int textY = rowTop + (rowHeight - 8) / 2;
+					graphics.text(font, row.name, textLeft, textY, Theme.text(), false);
+					graphics.text(font, row.value, right - PADDING - valueWidth, textY, valueColor, false);
+				}
 				if (hovered) {
 					hoveredRow = row;
 				}
@@ -229,7 +263,7 @@ public class StatsListWidget extends AbstractWidget {
 		if (event.x() < left || event.x() >= right || event.y() < listTop || event.y() >= bottom) {
 			return false;
 		}
-		int index = (int) ((event.y() - listTop + this.scroll) / rowHeight());
+		int index = (int) ((event.y() - listTop + this.scroll) / this.rowHeight());
 		if (index >= 0 && index < this.rows.size()) {
 			this.selected = index;
 			if (this.onSelect != null) {
@@ -245,7 +279,7 @@ public class StatsListWidget extends AbstractWidget {
 		if (!this.visible || !this.active || !this.isMouseOver(mouseX, mouseY) || this.maxScroll() <= 0) {
 			return false;
 		}
-		this.scroll = (int) Math.max(0, Math.min(this.maxScroll(), this.scroll - scrollY * rowHeight()));
+		this.scroll = (int) Math.max(0, Math.min(this.maxScroll(), this.scroll - scrollY * this.rowHeight()));
 		return true;
 	}
 
