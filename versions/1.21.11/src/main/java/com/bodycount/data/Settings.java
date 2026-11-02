@@ -15,13 +15,17 @@ public final class Settings {
 	public boolean hideEmpty = true;
 	public boolean followServer = true;
 
-	/** 0 = dark, 1 = light, 2 = neon, 3 = amber. */
+	/** 0 = vanilla, 1 = dark, 2 = light, 3 = neon, 4 = amber. */
 	public int theme = 0;
 
 	/** 0 = activity, 1 = name, 2 = kills, 3 = totems. */
 	public int sort = 0;
 
+	/** Written by current builds; its absence marks a pre-1.2.1 theme value. */
+	public int themeVersion = 1;
+
 	public static final String[] THEME_KEYS = {
+		"bodycount.theme.vanilla",
 		"bodycount.theme.dark",
 		"bodycount.theme.light",
 		"bodycount.theme.neon",

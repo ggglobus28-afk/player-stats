@@ -2,7 +2,6 @@ package com.bodycount.ui;
 
 import com.bodycount.data.StatsStore;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -33,13 +32,10 @@ public class RenameServerScreen extends Screen {
 		this.nameBox.setValue(this.entry.name == null ? "" : this.entry.name);
 		this.addRenderableWidget(this.nameBox);
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.save())
-			.bounds(left, top + 28, width, 20)
-			.build());
-
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.onClose())
-			.bounds(left, top + 52, width, 20)
-			.build());
+		this.addRenderableWidget(new ThemedButton(left, top + 28, width, 20,
+			CommonComponents.GUI_DONE, this::save));
+		this.addRenderableWidget(new ThemedButton(left, top + 52, width, 20,
+			CommonComponents.GUI_CANCEL, this::onClose));
 
 		this.setInitialFocus(this.nameBox);
 	}

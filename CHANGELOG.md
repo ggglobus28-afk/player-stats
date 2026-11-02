@@ -1,47 +1,53 @@
 # Changelog
 
+## 1.2.1
+
+- Chat tab shows kill pairs only; chat totem rows and the related setting were
+  removed.
+- The default theme now matches the vanilla statistics screen.
+- The other themes restyle all mod widgets, including buttons.
+- Existing theme choices are migrated to the new theme list.
+
 ## 1.2.0
 
-- Одна общая вкладка **«Игроки»** вместо отдельных «Тотемы» и «Убийства»:
-  на каждого игрока сразу видны убийства/смерти и снятые/потерянные тотемы.
-- Одна общая вкладка **«Чат»** вместо двух: убийства и тотемы в одной таблице.
-- Поддержка **Mod Menu**: настройки открываются прямо из списка модов.
-  Сам Mod Menu ставить не обязательно.
-- **Иконка** мода.
-- Переключатель разделов — сетка 2×2: Игроки, Чат, Серверы, Настройки.
-- Строки списка поддерживают вторую строку-подпись (счётчики тотемов под ником).
+- Merged the Players tab: kills/deaths and totems popped/lost in one table.
+- Merged the chat views into a single Chat tab.
+- Added optional Mod Menu integration.
+- Added the mod icon.
+- Section switcher is a 2×2 grid: Players, Chat, Servers, Settings.
+- List rows support an optional second line for totem counters.
 
 ## 1.1.2
 
-- Мод переименован: **Player Stats → BodyCount**.
-- Новый mod id `bodycount`, пакет `com.bodycount`, файл миксинов
-  `bodycount.mixins.json`, ресурсы в `assets/bodycount`.
-- Настройки переехали в `config/bodycount.json`; старый `playerstats.json`
-  читается автоматически при первом запуске.
-- Статистика по-прежнему хранится в `config/totems.txt`.
+- Renamed the mod from Player Stats to BodyCount.
+- Changed the mod id to `bodycount`, the package to `com.bodycount`, the mixin
+  file to `bodycount.mixins.json` and the assets to `assets/bodycount`.
+- Settings moved to `config/bodycount.json`; `config/playerstats.json` is read
+  when the new file is absent.
+- Statistics remain in `config/totems.txt`.
 
 ## 1.1.1
 
-- Вся статистика вынесена в обычный текстовый файл `config/totems.txt`.
-- Настройки хранятся отдельно, в `config/playerstats.json`.
-- Старый `playerstats.json` со статистикой переносится автоматически.
-- Исправлен перевёрнутый счётчик в парах тотемов из чата.
-- Добавлена защита от повреждённого файла данных.
+- Moved all statistics to the plain-text file `config/totems.txt`.
+- Settings are stored separately in `config/playerstats.json`.
+- Statistics from an old `playerstats.json` are imported automatically.
+- Fixed the reversed counter in chat totem pairs.
+- Added protection against a corrupted data file.
 
 ## 1.1.0
 
-- Новые вкладки «Чат: убийства» и «Чат: тотемы» — пары игроков из чата.
-- Экран настроек: что считать, тема, сортировка, иконки, компактные строки,
-  цветные значения, скрытие пустых строк, сброс статистики.
-- 4 темы оформления: Тёмная, Светлая, Неон, Янтарь.
-- Сортировка: по активности, по нику, по убийствам, по тотемам.
-- Всплывающие подсказки со счётчиками и K/D.
-- Профиль сервера больше не переключается сам, если выбран другой.
-- Исправлено переименование профиля в одиночной игре.
-- Объединение профилей теперь сливает и статистику из чата.
+- Added chat kill and totem pair views.
+- Added a settings screen: tracking options, theme, sorting, item icons,
+  compact rows, coloured values, hiding empty rows and statistics reset.
+- Added four themes: Dark, Light, Neon and Amber.
+- Added sorting by activity, name, kills and totems.
+- Added tooltips with counters and K/D.
+- A server profile no longer switches by itself when another one is pinned.
+- Fixed renaming a profile in singleplayer.
+- Merging profiles now merges chat statistics as well.
 
 ## 1.0.0
 
-- Первый выпуск.
-- Четвёртая вкладка в меню статистики: тотемы и убийства/смерти.
-- Менеджер профилей серверов.
+- First release.
+- Fourth tab in the statistics screen: totems and kills/deaths.
+- Server profile manager.

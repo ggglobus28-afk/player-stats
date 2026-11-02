@@ -3,7 +3,6 @@ package com.bodycount.ui;
 import com.bodycount.data.Settings;
 import com.bodycount.data.StatsStore;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -18,15 +17,15 @@ import java.util.function.Consumer;
  * profile the tab follows.
  */
 public class SettingsScreen extends Screen {
-	private record Toggle(Button button, String key, BooleanSupplier getter) {
+	private record Toggle(ThemedButton button, String key, BooleanSupplier getter) {
 	}
 
 	private final Screen parent;
 	private final BodyCountTab tab;
 	private final List<Toggle> toggles = new ArrayList<>();
-	private Button themeButton;
-	private Button sortButton;
-	private Button resetButton;
+	private ThemedButton themeButton;
+	private ThemedButton sortButton;
+	private ThemedButton resetButton;
 	private boolean confirmReset;
 
 	public SettingsScreen(Screen parent, BodyCountTab tab) {
@@ -53,8 +52,6 @@ public class SettingsScreen extends Screen {
 			() -> StatsStore.settings().trackKills, value -> StatsStore.settings().trackKills = value);
 		this.addToggle(leftX, top + row++ * rowHeight, columnWidth, "bodycount.setting.chat_kills",
 			() -> StatsStore.settings().chatKills, value -> StatsStore.settings().chatKills = value);
-		this.addToggle(leftX, top + row++ * rowHeight, columnWidth, "bodycount.setting.chat_totems",
-			() -> StatsStore.settings().chatTotems, value -> StatsStore.settings().chatTotems = value);
 		this.addToggle(leftX, top + row++ * rowHeight, columnWidth, "bodycount.setting.icons",
 			() -> StatsStore.settings().showIcons, value -> StatsStore.settings().showIcons = value);
 		this.addToggle(leftX, top + row++ * rowHeight, columnWidth, "bodycount.setting.compact",
@@ -68,22 +65,22 @@ public class SettingsScreen extends Screen {
 		this.addToggle(rightX, top + row++ * rowHeight, columnWidth, "bodycount.setting.follow",
 			() -> StatsStore.settings().followServer, value -> StatsStore.settings().followServer = value);
 
-		this.themeButton = Button.builder(Component.empty(), button -> {
+		this.themeButton = new ThemedButton(rightX, top + row++ * rowHeight, columnWidth, 20, Component.empty(), () -> {
 			StatsStore.settings().nextTheme();
 			StatsStore.get().saveNow();
 			this.refreshLabels();
-		}).bounds(rightX, top + row++ * rowHeight, columnWidth, 20).build();
+		});
 		this.addRenderableWidget(this.themeButton);
 
-		this.sortButton = Button.builder(Component.empty(), button -> {
+		this.sortButton = new ThemedButton(rightX, top + row++ * rowHeight, columnWidth, 20, Component.empty(), () -> {
 			StatsStore.settings().nextSort();
 			StatsStore.get().saveNow();
 			this.refreshLabels();
-		}).bounds(rightX, top + row++ * rowHeight, columnWidth, 20).build();
+		});
 		this.addRenderableWidget(this.sortButton);
 
 		int bottom = top + 6 * rowHeight + 10;
-		this.resetButton = Button.builder(Component.empty(), button -> {
+		this.resetButton = new ThemedButton(leftX, bottom, columnWidth, 20, Component.empty(), () -> {
 			if (this.confirmReset) {
 				StatsStore.get().displayEntry(net.minecraft.client.Minecraft.getInstance()).clearStats();
 				StatsStore.get().saveNow();
@@ -93,22 +90,21 @@ public class SettingsScreen extends Screen {
 				this.confirmReset = true;
 				this.refreshLabels();
 			}
-		}).bounds(leftX, bottom, columnWidth, 20).build();
+		});
 		this.addRenderableWidget(this.resetButton);
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
-			.bounds(rightX, bottom, columnWidth, 20)
-			.build());
+		this.addRenderableWidget(new ThemedButton(rightX, bottom, columnWidth, 20,
+			CommonComponents.GUI_DONE, this::onClose));
 
 		this.refreshLabels();
 	}
 
 	private void addToggle(int x, int y, int width, String key, BooleanSupplier getter, Consumer<Boolean> setter) {
-		Button button = Button.builder(Component.empty(), pressed -> {
+		ThemedButton button = new ThemedButton(x, y, width, 20, Component.empty(), () -> {
 			setter.accept(!getter.getAsBoolean());
 			StatsStore.get().saveNow();
 			this.refreshLabels();
-		}).bounds(x, y, width, 20).build();
+		});
 		this.addRenderableWidget(button);
 		this.toggles.add(new Toggle(button, key, getter));
 	}

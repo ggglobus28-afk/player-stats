@@ -259,6 +259,15 @@ public final class StatsStore {
 			JsonElement settingsElement = object.has("settings") ? object.get("settings") : object;
 			Settings loaded = GSON.fromJson(settingsElement, Settings.class);
 			if (loaded != null) {
+				// Builds before the vanilla theme used 0 for Dark. Shift those
+				// values once so the saved look is preserved.
+				if (settingsElement.isJsonObject()) {
+					JsonObject settingsObject = settingsElement.getAsJsonObject();
+					if (settingsObject.has("theme") && !settingsObject.has("themeVersion")) {
+						int shifted = loaded.theme + 1;
+						loaded.theme = Math.max(0, Math.min(Settings.THEME_KEYS.length - 1, shifted));
+					}
+				}
 				this.data.settings = loaded;
 			}
 			// Older versions kept the statistics inside this JSON file: import them once.

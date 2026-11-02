@@ -3,7 +3,6 @@ package com.bodycount.ui;
 import com.bodycount.data.StatsStore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -19,8 +18,8 @@ import java.util.Map;
 
 /**
  * The fourth statistics tab. It has three views: one merged per-player table
- * (kills/deaths plus totems popped/lost), one merged chat pair table, and the
- * server profile manager. Settings open in their own screen.
+ * (kills/deaths plus totems popped/lost), one chat pair table, and the server
+ * profile manager. Settings open in their own screen.
  */
 public class BodyCountTab extends GridLayoutTab {
 	private enum View {
@@ -29,14 +28,12 @@ public class BodyCountTab extends GridLayoutTab {
 		SERVERS
 	}
 
-	/** One row of the chat view: a pair, or a single player for solo totems. */
+	/** One row of the chat view: kills in both directions for a pair. */
 	private static final class MergedPair {
 		private final String a;
 		private final String b;
 		private int killsAB;
 		private int killsBA;
-		private int totemsAB;
-		private int totemsBA;
 		private long lastSeen;
 
 		private MergedPair(String a, String b) {
@@ -44,43 +41,27 @@ public class BodyCountTab extends GridLayoutTab {
 			this.b = b;
 		}
 
-		private boolean solo() {
-			return this.a.isEmpty() || this.b.isEmpty();
-		}
-
-		private String soloName() {
-			return this.a.isEmpty() ? this.b : this.a;
-		}
-
 		private String label() {
-			return this.solo() ? this.soloName() : this.a + " \u21c4 " + this.b;
+			return this.a + " \u21c4 " + this.b;
 		}
 
 		private int kills() {
 			return this.killsAB + this.killsBA;
-		}
-
-		private int totems() {
-			return this.totemsAB + this.totemsBA;
-		}
-
-		private int total() {
-			return this.kills() + this.totems();
 		}
 	}
 
 	private final Screen parent;
 	private final StatsListWidget playerList;
 	private final StatsListWidget serverList;
-	private final Button playersButton;
-	private final Button chatButton;
-	private final Button serversButton;
-	private final Button settingsButton;
-	private final Button setActiveButton;
-	private final Button renameButton;
-	private final Button mergeButton;
-	private final Button deleteButton;
-	private final Button addCurrentButton;
+	private final ThemedButton playersButton;
+	private final ThemedButton chatButton;
+	private final ThemedButton serversButton;
+	private final ThemedButton settingsButton;
+	private final ThemedButton setActiveButton;
+	private final ThemedButton renameButton;
+	private final ThemedButton mergeButton;
+	private final ThemedButton deleteButton;
+	private final ThemedButton addCurrentButton;
 	private final List<StatsStore.ServerEntry> shownServers = new ArrayList<>();
 
 	private View view = View.PLAYERS;
@@ -98,27 +79,25 @@ public class BodyCountTab extends GridLayoutTab {
 		this.chatButton = this.modeButton("bodycount.mode.chat", "bodycount.mode.chat.tip", View.CHAT);
 		this.serversButton = this.modeButton("bodycount.mode.servers", "bodycount.mode.servers.tip", View.SERVERS);
 
-		this.settingsButton = Button.builder(Component.translatable("bodycount.mode.settings"), button ->
-			Minecraft.getInstance().setScreen(new SettingsScreen(this.parent, this)))
-			.tooltip(Tooltip.create(Component.translatable("bodycount.mode.settings.tip")))
-			.build();
+		this.settingsButton = this.button("bodycount.mode.settings", "bodycount.mode.settings.tip", () ->
+			Minecraft.getInstance().setScreen(new SettingsScreen(this.parent, this)));
 
-		this.setActiveButton = Button.builder(Component.translatable("bodycount.server.set_active"), button -> {
+		this.setActiveButton = this.button("bodycount.server.set_active", "bodycount.server.set_active.tip", () -> {
 			StatsStore.ServerEntry entry = this.selectedServer();
 			if (entry != null) {
 				StatsStore.get().setActive(entry);
 				this.refresh();
 			}
-		}).tooltip(Tooltip.create(Component.translatable("bodycount.server.set_active.tip"))).build();
+		});
 
-		this.renameButton = Button.builder(Component.translatable("bodycount.server.rename"), button -> {
+		this.renameButton = this.button("bodycount.server.rename", null, () -> {
 			StatsStore.ServerEntry entry = this.selectedServer();
 			if (entry != null) {
 				Minecraft.getInstance().setScreen(new RenameServerScreen(this.parent, entry));
 			}
-		}).build();
+		});
 
-		this.mergeButton = Button.builder(Component.translatable("bodycount.server.merge"), button -> {
+		this.mergeButton = this.button("bodycount.server.merge", "bodycount.server.merge.tip", () -> {
 			StatsStore store = StatsStore.get();
 			StatsStore.ServerEntry source = this.selectedServer();
 			StatsStore.ServerEntry target = store.active();
@@ -128,9 +107,9 @@ public class BodyCountTab extends GridLayoutTab {
 				store.saveNow();
 				this.refresh();
 			}
-		}).tooltip(Tooltip.create(Component.translatable("bodycount.server.merge.tip"))).build();
+		});
 
-		this.deleteButton = Button.builder(Component.translatable("bodycount.server.delete"), button -> {
+		this.deleteButton = this.button("bodycount.server.delete", "bodycount.server.delete.tip", () -> {
 			StatsStore store = StatsStore.get();
 			StatsStore.ServerEntry entry = this.selectedServer();
 			if (entry != null && store.servers().size() > 1 && !entry.id.equals(store.data().active)) {
@@ -138,13 +117,13 @@ public class BodyCountTab extends GridLayoutTab {
 				store.saveNow();
 				this.refresh();
 			}
-		}).tooltip(Tooltip.create(Component.translatable("bodycount.server.delete.tip"))).build();
+		});
 
-		this.addCurrentButton = Button.builder(Component.translatable("bodycount.server.add_current"), button -> {
+		this.addCurrentButton = this.button("bodycount.server.add_current", "bodycount.server.add_current.tip", () -> {
 			StatsStore.get().ensureCurrent(Minecraft.getInstance());
 			StatsStore.get().saveNow();
 			this.refresh();
-		}).tooltip(Tooltip.create(Component.translatable("bodycount.server.add_current.tip"))).build();
+		});
 
 		this.add(this.playersButton, 0, 0);
 		this.add(this.chatButton, 0, 1);
@@ -162,8 +141,16 @@ public class BodyCountTab extends GridLayoutTab {
 		this.layoutWidgets();
 	}
 
-	private Button modeButton(String key, String tipKey, View target) {
-		return Button.builder(Component.translatable(key), button -> {
+	private ThemedButton button(String key, String tipKey, Runnable action) {
+		ThemedButton button = new ThemedButton(Component.translatable(key), action);
+		if (tipKey != null) {
+			button.setTooltip(Tooltip.create(Component.translatable(tipKey)));
+		}
+		return button;
+	}
+
+	private ThemedButton modeButton(String key, String tipKey, View target) {
+		return this.button(key, tipKey, () -> {
 			this.view = target;
 			if (this.view == View.SERVERS) {
 				StatsStore.get().importServerList(Minecraft.getInstance());
@@ -171,7 +158,7 @@ public class BodyCountTab extends GridLayoutTab {
 			}
 			this.refresh();
 			this.layoutWidgets();
-		}).tooltip(Tooltip.create(Component.translatable(tipKey))).build();
+		});
 	}
 
 	private void add(AbstractWidget widget, int row, int column) {
@@ -251,54 +238,25 @@ public class BodyCountTab extends GridLayoutTab {
 			target.killsBA += pair.bKillsA;
 			target.lastSeen = Math.max(target.lastSeen, pair.lastSeen);
 		}
-		for (StatsStore.ChatPair pair : entry.chatTotems.values()) {
-			if (pair == null) {
-				continue;
-			}
-			MergedPair target = merged.computeIfAbsent(StatsStore.pairKey(pair.a, pair.b),
-				key -> new MergedPair(safe(pair.a), safe(pair.b)));
-			target.totemsAB += pair.aTotemsB;
-			target.totemsBA += pair.bTotemsA;
-			target.lastSeen = Math.max(target.lastSeen, pair.lastSeen);
-		}
 
 		List<MergedPair> pairs = new ArrayList<>(merged.values());
-		pairs.removeIf(pair -> hideEmpty && pair.total() == 0);
+		pairs.removeIf(pair -> hideEmpty && pair.kills() == 0);
 		pairs.sort((first, second) -> this.comparePairs(first, second));
 
 		ItemStack icon = new ItemStack(Items.DIAMOND_SWORD);
 		List<StatsListWidget.Row> rows = new ArrayList<>();
 		for (MergedPair pair : pairs) {
 			List<Component> tooltip = new ArrayList<>();
-			Component subtitle;
-			Component value;
-			int mine;
-			int theirs;
+			tooltip.add(Component.translatable("bodycount.tip.pair_kills", pair.a, pair.b, pair.killsAB));
+			tooltip.add(Component.translatable("bodycount.tip.pair_kills", pair.b, pair.a, pair.killsBA));
 
-			if (pair.solo()) {
-				int total = pair.totems();
-				subtitle = Component.translatable("bodycount.sub.totem_solo", total);
-				value = Component.empty();
-				mine = total;
-				theirs = 0;
-				tooltip.add(Component.translatable("bodycount.tip.totem_solo", pair.soloName(), total));
-			} else {
-				subtitle = Component.translatable("bodycount.sub.totems_pair", pair.totemsAB, pair.totemsBA);
-				value = Component.literal(pair.killsAB + " / " + pair.killsBA);
-				mine = pair.killsAB;
-				theirs = pair.killsBA;
-				tooltip.add(Component.translatable("bodycount.tip.pair_kills", pair.a, pair.b, pair.killsAB));
-				tooltip.add(Component.translatable("bodycount.tip.pair_kills", pair.b, pair.a, pair.killsBA));
-				tooltip.add(Component.translatable("bodycount.tip.pair_totems", pair.a, pair.b, pair.totemsAB));
-				tooltip.add(Component.translatable("bodycount.tip.pair_totems", pair.b, pair.a, pair.totemsBA));
-			}
-
-			rows.add(new StatsListWidget.Row(Component.literal(pair.label()), value, icon, tooltip,
-				this.colorFor(mine, theirs), subtitle));
+			rows.add(new StatsListWidget.Row(Component.literal(pair.label()),
+				Component.literal(pair.killsAB + " / " + pair.killsBA), icon, tooltip,
+				this.colorFor(pair.killsAB, pair.killsBA), null));
 		}
 
 		this.playerList.setHeader(Component.translatable("bodycount.header.pair_n", rows.size()),
-			Component.translatable("bodycount.header.kills"));
+			Component.translatable("bodycount.header.pair_kills"));
 		this.playerList.setEmptyText(Component.translatable("bodycount.empty.chat"));
 		this.playerList.setRows(rows);
 	}
@@ -327,7 +285,7 @@ public class BodyCountTab extends GridLayoutTab {
 			tooltip.add(Component.translatable("bodycount.tip.server_players", entry.players.size()));
 			tooltip.add(Component.translatable("bodycount.tip.server_kills", entry.kills(), entry.deaths()));
 			tooltip.add(Component.translatable("bodycount.tip.server_totems", entry.totemsDealt(), entry.totemsTaken()));
-			tooltip.add(Component.translatable("bodycount.tip.server_chat", entry.chatKillsTotal(), entry.chatTotemsTotal()));
+			tooltip.add(Component.translatable("bodycount.tip.server_chat", entry.chatKillsTotal()));
 			rows.add(new StatsListWidget.Row(
 				Component.literal(StatsStore.displayName(entry)), value, icon, tooltip,
 				active ? Theme.good() : 0, null));
@@ -353,7 +311,7 @@ public class BodyCountTab extends GridLayoutTab {
 		this.label(this.serversButton, "bodycount.mode.servers", this.view == View.SERVERS);
 	}
 
-	private void label(Button button, String key, boolean active) {
+	private void label(ThemedButton button, String key, boolean active) {
 		Component text = Component.translatable(key);
 		button.setMessage(active ? Component.literal("\u2022 ").append(text) : text);
 	}
@@ -397,19 +355,7 @@ public class BodyCountTab extends GridLayoutTab {
 		if (sort == 1) {
 			return first.label().compareToIgnoreCase(second.label());
 		}
-		int firstValue;
-		int secondValue;
-		if (sort == 2) {
-			firstValue = first.kills();
-			secondValue = second.kills();
-		} else if (sort == 3) {
-			firstValue = first.totems();
-			secondValue = second.totems();
-		} else {
-			firstValue = first.total();
-			secondValue = second.total();
-		}
-		int compared = Integer.compare(secondValue, firstValue);
+		int compared = Integer.compare(second.kills(), first.kills());
 		return compared != 0 ? compared : first.label().compareToIgnoreCase(second.label());
 	}
 
