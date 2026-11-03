@@ -40,9 +40,9 @@ not need to be installed on the server and does not use Fabric API.
 
 | Minecraft | File | Java | Fabric Loader |
 |---|---|---|---|
-| 1.21.11 | `bodycount-1.2.2-mc1.21.11.jar` | 21+ | 0.16.0+ |
-| 26.1 – 26.1.2 | `bodycount-1.2.2-mc26.1.jar` | 25+ | 0.19.5+ |
-| 26.2 – 26.3 | `bodycount-1.2.2-mc26.2-26.3.jar` | 25+ | 0.19.5+ |
+| 1.21.11 | `bodycount-1.2.3-mc1.21.11.jar` | 21+ | 0.16.0+ |
+| 26.1 – 26.1.2 | `bodycount-1.2.3-mc26.1.jar` | 25+ | 0.19.5+ |
+| 26.2 – 26.3 | `bodycount-1.2.3-mc26.2-26.3.jar` | 25+ | 0.19.5+ |
 
 Install one jar only, matching the game version.
 
@@ -61,11 +61,11 @@ Upload three files, one per version entry:
 
 | Version title | File | Game versions | Dependencies |
 |---|---|---|---|
-| `1.2.2 for 1.21.11` | `bodycount-1.2.2-mc1.21.11.jar` | 1.21.11 | Fabric Loader 0.16.0+, Java 21+ |
-| `1.2.2 for 26.1` | `bodycount-1.2.2-mc26.1.jar` | 26.1, 26.1.1, 26.1.2 | Fabric Loader 0.19.5+, Java 25+ |
-| `1.2.2 for 26.2–26.3` | `bodycount-1.2.2-mc26.2-26.3.jar` | 26.2, 26.3 | Fabric Loader 0.19.5+, Java 25+ |
+| `1.2.3 for 1.21.11` | `bodycount-1.2.3-mc1.21.11.jar` | 1.21.11 | Fabric Loader 0.16.0+, Java 21+ |
+| `1.2.3 for 26.1` | `bodycount-1.2.3-mc26.1.jar` | 26.1, 26.1.1, 26.1.2 | Fabric Loader 0.19.5+, Java 25+ |
+| `1.2.3 for 26.2–26.3` | `bodycount-1.2.3-mc26.2-26.3.jar` | 26.2, 26.3 | Fabric Loader 0.19.5+, Java 25+ |
 
-Release channel: **Release**. Changelog: copy the `1.2.2` section from
+Release channel: **Release**. Changelog: copy the `1.2.3` section from
 `CHANGELOG.md`.
 
 ## Gallery
@@ -97,7 +97,7 @@ this build. If real screenshots are added later, place them in
    `minecraft`, `java`, `entrypoints`, icon, no `com/terraformersmc`.
 3. Copy jars to the archive folder and update `ВЕРСИИ.txt`.
 4. Commit and push to GitHub.
-5. Create a GitHub release tagged `v1.2.2` and attach the three jars.
+5. Create a GitHub release tagged `v1.2.3` and attach the three jars.
 6. Upload the three files to Modrinth with the version table above.
 7. Link the Modrinth page from the GitHub release and the README.
 8. Do not reupload the same jar to other platforms; Modrinth rules prohibit

@@ -2,6 +2,7 @@ package com.bodycount.ui;
 
 import com.bodycount.data.Settings;
 import com.bodycount.data.StatsStore;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -13,16 +14,22 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 /**
- * All user facing toggles: what is tracked, how the list looks and which
- * profile the tab follows.
+ * Settings, laid out as a single column of rows: the label on the left and a
+ * button with the current value on the right. This keeps the screen compact and
+ * readable at every GUI scale.
  */
 public class SettingsScreen extends Screen {
 	private record Toggle(ThemedButton button, String key, BooleanSupplier getter) {
 	}
 
+	private record Label(Component text, int x, int y, int height) {
+	}
+
 	private final Screen parent;
 	private final BodyCountTab tab;
 	private final List<Toggle> toggles = new ArrayList<>();
+	private final List<Label> labels = new ArrayList<>();
+	private Settings current;
 	private ThemedButton themeButton;
 	private ThemedButton sortButton;
 	private ThemedButton resetButton;
@@ -37,95 +44,108 @@ public class SettingsScreen extends Screen {
 	@Override
 	protected void init() {
 		this.toggles.clear();
+		this.labels.clear();
+		this.current = StatsStore.settings();
 
-		int columnWidth = Math.min(170, Math.max(140, (this.width - 40) / 2));
-		int gap = 6;
-		int leftX = this.width / 2 - columnWidth - gap / 2;
-		int rightX = this.width / 2 + gap / 2;
-		int top = this.height / 2 - 88;
-		int rowHeight = 24;
+		int width = Math.min(360, Math.max(240, this.width - 40));
+		int left = (this.width - width) / 2;
+		int rows = 10;
+		int top = 42;
+		int bottomY = this.height - 30;
+		int rowHeight = Math.max(16, Math.min(21, (bottomY - top) / rows));
+		int buttonWidth = Math.min(104, Math.max(70, width / 3));
+		int buttonHeight = Math.min(20, rowHeight - 1);
+		int buttonX = left + width - buttonWidth;
+
 		int row = 0;
+		this.row(left, top, rowHeight, buttonX, buttonWidth, buttonHeight, row++,
+			"bodycount.setting.track_totems", () -> this.current.trackTotems, value -> this.current.trackTotems = value);
+		this.row(left, top, rowHeight, buttonX, buttonWidth, buttonHeight, row++,
+			"bodycount.setting.track_kills", () -> this.current.trackKills, value -> this.current.trackKills = value);
+		this.row(left, top, rowHeight, buttonX, buttonWidth, buttonHeight, row++,
+			"bodycount.setting.chat_kills", () -> this.current.chatKills, value -> this.current.chatKills = value);
+		this.row(left, top, rowHeight, buttonX, buttonWidth, buttonHeight, row++,
+			"bodycount.setting.icons", () -> this.current.showIcons, value -> this.current.showIcons = value);
+		this.row(left, top, rowHeight, buttonX, buttonWidth, buttonHeight, row++,
+			"bodycount.setting.compact", () -> this.current.compactRows, value -> this.current.compactRows = value);
+		this.row(left, top, rowHeight, buttonX, buttonWidth, buttonHeight, row++,
+			"bodycount.setting.colors", () -> this.current.colorValues, value -> this.current.colorValues = value);
+		this.row(left, top, rowHeight, buttonX, buttonWidth, buttonHeight, row++,
+			"bodycount.setting.hide_empty", () -> this.current.hideEmpty, value -> this.current.hideEmpty = value);
+		this.row(left, top, rowHeight, buttonX, buttonWidth, buttonHeight, row++,
+			"bodycount.setting.follow", () -> this.current.followServer, value -> this.current.followServer = value);
 
-		this.addToggle(leftX, top + row++ * rowHeight, columnWidth, "bodycount.setting.track_totems",
-			() -> StatsStore.settings().trackTotems, value -> StatsStore.settings().trackTotems = value);
-		this.addToggle(leftX, top + row++ * rowHeight, columnWidth, "bodycount.setting.track_kills",
-			() -> StatsStore.settings().trackKills, value -> StatsStore.settings().trackKills = value);
-		this.addToggle(leftX, top + row++ * rowHeight, columnWidth, "bodycount.setting.chat_kills",
-			() -> StatsStore.settings().chatKills, value -> StatsStore.settings().chatKills = value);
-		this.addToggle(leftX, top + row++ * rowHeight, columnWidth, "bodycount.setting.icons",
-			() -> StatsStore.settings().showIcons, value -> StatsStore.settings().showIcons = value);
-		this.addToggle(leftX, top + row++ * rowHeight, columnWidth, "bodycount.setting.compact",
-			() -> StatsStore.settings().compactRows, value -> StatsStore.settings().compactRows = value);
-
-		row = 0;
-		this.addToggle(rightX, top + row++ * rowHeight, columnWidth, "bodycount.setting.colors",
-			() -> StatsStore.settings().colorValues, value -> StatsStore.settings().colorValues = value);
-		this.addToggle(rightX, top + row++ * rowHeight, columnWidth, "bodycount.setting.hide_empty",
-			() -> StatsStore.settings().hideEmpty, value -> StatsStore.settings().hideEmpty = value);
-		this.addToggle(rightX, top + row++ * rowHeight, columnWidth, "bodycount.setting.follow",
-			() -> StatsStore.settings().followServer, value -> StatsStore.settings().followServer = value);
-
-		this.themeButton = new ThemedButton(rightX, top + row++ * rowHeight, columnWidth, 20, Component.empty(), () -> {
-			StatsStore.settings().nextTheme();
-			StatsStore.get().saveNow();
+		this.themeButton = this.valueButton(buttonX, top + row * rowHeight, buttonWidth, buttonHeight, () -> {
+			this.current.nextTheme();
+			this.save();
 			this.refreshLabels();
 		});
-		this.addRenderableWidget(this.themeButton);
+		this.labels.add(new Label(Component.translatable("bodycount.setting.theme"),
+			left, top + row++ * rowHeight, rowHeight));
 
-		this.sortButton = new ThemedButton(rightX, top + row++ * rowHeight, columnWidth, 20, Component.empty(), () -> {
-			StatsStore.settings().nextSort();
-			StatsStore.get().saveNow();
+		this.sortButton = this.valueButton(buttonX, top + row * rowHeight, buttonWidth, buttonHeight, () -> {
+			this.current.nextSort();
+			this.save();
 			this.refreshLabels();
 		});
-		this.addRenderableWidget(this.sortButton);
+		this.labels.add(new Label(Component.translatable("bodycount.setting.sort"),
+			left, top + row * rowHeight, rowHeight));
 
-		int bottom = top + 6 * rowHeight + 10;
-		this.resetButton = new ThemedButton(leftX, bottom, columnWidth, 20, Component.empty(), () -> {
-			if (this.confirmReset) {
-				StatsStore.get().displayEntry(net.minecraft.client.Minecraft.getInstance()).clearStats();
-				StatsStore.get().saveNow();
-				this.confirmReset = false;
-				this.refreshLabels();
-			} else {
-				this.confirmReset = true;
-				this.refreshLabels();
-			}
-		});
+		int bottomButtonHeight = 20;
+		this.resetButton = new ThemedButton(left, this.height - 26, width / 2 - 2, bottomButtonHeight,
+			Component.empty(), () -> {
+				if (this.confirmReset) {
+					StatsStore.get().displayEntry(Minecraft.getInstance()).clearStats();
+					StatsStore.get().saveNow();
+					this.confirmReset = false;
+					this.refreshLabels();
+				} else {
+					this.confirmReset = true;
+					this.refreshLabels();
+				}
+			});
 		this.addRenderableWidget(this.resetButton);
-
-		this.addRenderableWidget(new ThemedButton(rightX, bottom, columnWidth, 20,
-			CommonComponents.GUI_DONE, this::onClose));
+		this.addRenderableWidget(new ThemedButton(this.width / 2 + 2, this.height - 26,
+			(width / 2) - 2 + (width % 2), bottomButtonHeight, CommonComponents.GUI_DONE, this::onClose));
 
 		this.refreshLabels();
 	}
 
-	private void addToggle(int x, int y, int width, String key, BooleanSupplier getter, Consumer<Boolean> setter) {
-		ThemedButton button = new ThemedButton(x, y, width, 20, Component.empty(), () -> {
-			setter.accept(!getter.getAsBoolean());
-			StatsStore.get().saveNow();
-			this.refreshLabels();
-		});
+	private ThemedButton valueButton(int x, int y, int width, int height, Runnable action) {
+		ThemedButton button = new ThemedButton(x, y, width, height, Component.empty(), action);
+		this.addRenderableWidget(button);
+		return button;
+	}
+
+	private void row(int left, int top, int rowHeight, int buttonX, int buttonWidth, int buttonHeight, int row,
+			String key, BooleanSupplier getter, Consumer<Boolean> setter) {
+		StatsStore store = StatsStore.get();
+		ThemedButton button = new ThemedButton(buttonX, top + row * rowHeight, buttonWidth, buttonHeight,
+			Component.empty(), () -> {
+				setter.accept(!getter.getAsBoolean());
+				store.saveNow();
+				this.refreshLabels();
+			});
 		this.addRenderableWidget(button);
 		this.toggles.add(new Toggle(button, key, getter));
+		this.labels.add(new Label(Component.translatable(key), left, top + row * rowHeight, rowHeight));
+	}
+
+	private void save() {
+		StatsStore.get().saveNow();
 	}
 
 	private void refreshLabels() {
 		for (Toggle toggle : this.toggles) {
 			boolean value = toggle.getter().getAsBoolean();
-			toggle.button().setMessage(Component.translatable(toggle.key())
-				.append(": ")
-				.append(Component.translatable(value ? "bodycount.on" : "bodycount.off")));
+			toggle.button().setMessage(Component.translatable(value ? "bodycount.on" : "bodycount.off"));
 		}
 		Settings settings = StatsStore.settings();
 		if (this.themeButton != null) {
-			this.themeButton.setMessage(Component.translatable("bodycount.setting.theme")
-				.append(": ")
-				.append(Component.translatable(Settings.THEME_KEYS[settings.theme()])));
+			this.themeButton.setMessage(Component.translatable(Settings.THEME_KEYS[settings.theme()]));
 		}
 		if (this.sortButton != null) {
-			this.sortButton.setMessage(Component.translatable("bodycount.setting.sort")
-				.append(": ")
-				.append(Component.translatable(Settings.SORT_KEYS[settings.sort()])));
+			this.sortButton.setMessage(Component.translatable(Settings.SORT_KEYS[settings.sort()]));
 		}
 		if (this.resetButton != null) {
 			this.resetButton.setMessage(Component.translatable(
@@ -145,8 +165,12 @@ public class SettingsScreen extends Screen {
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 		super.render(graphics, mouseX, mouseY, partialTick);
-		graphics.drawCenteredString(this.font, this.title, this.width / 2, this.height / 2 - 110, 0xFFFFFFFF);
+		graphics.drawCenteredString(this.font, this.title, this.width / 2, 18, 0xFFFFFFFF);
 		graphics.drawCenteredString(this.font, Component.translatable("bodycount.settings.hint"),
-			this.width / 2, this.height / 2 - 100, 0xFF9E9E9E);
+			this.width / 2, 30, 0xFF9E9E9E);
+		for (Label label : this.labels) {
+			int y = label.y() + (label.height() - 8) / 2;
+			graphics.drawString(this.font, label.text(), label.x(), y, 0xFFFFFFFF, false);
+		}
 	}
 }

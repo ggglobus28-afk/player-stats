@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.3
+
+- Redesigned the tab: the view switcher is one compact row instead of a 2×2
+  block of large buttons, and the open view is highlighted.
+- The player, chat and server lists now follow the vanilla statistics list:
+  flat background, small grey header, thin separator and subtle row highlight.
+- Settings are a readable single column: the label on the left, the current
+  value in a button on the right.
+- New mod icon and matching gallery banner.
+
 ## 1.2.2
 
 - Fixed the mod buttons not responding to clicks. They now inherit the vanilla

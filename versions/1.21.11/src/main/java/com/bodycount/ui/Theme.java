@@ -15,7 +15,7 @@ public final class Theme {
 	private static final int[] TEXT = {0xFFFFFFFF, 0xFFFFFFFF, 0xFF101010, 0xFFE0FFFF, 0xFFFFFFFF};
 	private static final int[] VALUE = {0xFFFFFFFF, 0xFFE0E0E0, 0xFF303030, 0xFF00FFC8, 0xFFFFD54F};
 	private static final int[] SELECTED = {0x30FFFFFF, 0x5000C8FF, 0x500078D7, 0x7000FF88, 0x70FF9800};
-	private static final int[] HOVER = {0x00000000, 0x30FFFFFF, 0x20000000, 0x3000FF88, 0x30FFC400};
+	private static final int[] HOVER = {0x20FFFFFF, 0x30FFFFFF, 0x20000000, 0x3000FF88, 0x30FFC400};
 	private static final int[] DIVIDER = {0x30808080, 0x60FFFFFF, 0x40000000, 0x6000FFC8, 0x60FFC400};
 	private static final int[] GOOD = {0xFFFFFFFF, 0xFF66FF88, 0xFF2E7D32, 0xFF00FF88, 0xFFFFD54F};
 	private static final int[] BAD = {0xFFFFFFFF, 0xFFFF6666, 0xFFC62828, 0xFFFF4466, 0xFFFF7043};

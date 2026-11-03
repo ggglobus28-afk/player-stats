@@ -304,14 +304,13 @@ public class BodyCountTab extends GridLayoutTab {
 	}
 
 	private void updateModeButtons() {
-		this.label(this.playersButton, "bodycount.mode.players", this.view == View.PLAYERS);
-		this.label(this.chatButton, "bodycount.mode.chat", this.view == View.CHAT);
-		this.label(this.serversButton, "bodycount.mode.servers", this.view == View.SERVERS);
+		this.selected(this.playersButton, this.view == View.PLAYERS);
+		this.selected(this.chatButton, this.view == View.CHAT);
+		this.selected(this.serversButton, this.view == View.SERVERS);
 	}
 
-	private void label(ThemedButton button, String key, boolean active) {
-		Component text = Component.translatable(key);
-		button.setMessage(active ? Component.literal("\u2022 ").append(text) : text);
+	private void selected(ThemedButton button, boolean active) {
+		button.setSelected(active);
 	}
 
 	private void updateServerButtons() {
@@ -371,33 +370,36 @@ public class BodyCountTab extends GridLayoutTab {
 	}
 
 	private void layoutWidgets() {
-		int width = Math.min(400, Math.max(220, this.area.width() - 16));
+		int width = Math.min(420, Math.max(240, this.area.width() - 16));
 		int left = this.area.left() + (this.area.width() - width) / 2;
-		int top = this.area.top() + 4;
+		int top = this.area.top() + 2;
 		int gap = 4;
-		int buttonWidth = (width - gap) / 2;
 
-		this.place(this.playersButton, left, top, buttonWidth);
-		this.place(this.chatButton, left + buttonWidth + gap, top, width - buttonWidth - gap);
+		// One row of view tabs plus a settings button on the right.
+		int settingsWidth = Math.min(84, width / 4);
+		int tabsWidth = width - settingsWidth - gap;
+		int tabWidth = (tabsWidth - gap * 2) / 3;
+		this.place(this.playersButton, left, top, tabWidth);
+		this.place(this.chatButton, left + tabWidth + gap, top, tabWidth);
+		this.place(this.serversButton, left + (tabWidth + gap) * 2, top, tabWidth);
+		this.place(this.settingsButton, left + tabsWidth + gap, top, settingsWidth);
 
-		int secondRow = top + 22;
-		this.place(this.serversButton, left, secondRow, buttonWidth);
-		this.place(this.settingsButton, left + buttonWidth + gap, secondRow, width - buttonWidth - gap);
-
-		int listTop = secondRow + 24;
-		int listHeight = Math.max(40, this.area.bottom() - listTop - 4);
+		int listTop = top + 24;
+		int listHeight = Math.max(40, this.area.bottom() - listTop - 2);
 
 		boolean servers = this.view == View.SERVERS;
 		if (servers) {
-			listHeight = Math.max(40, listHeight - 48);
-			int firstRow = this.area.bottom() - 44;
-			int secondActionRow = this.area.bottom() - 22;
-
-			this.place(this.setActiveButton, left, firstRow, buttonWidth);
-			this.place(this.renameButton, left + buttonWidth + gap, firstRow, width - buttonWidth - gap);
-			this.place(this.mergeButton, left, secondActionRow, buttonWidth);
-			this.place(this.addCurrentButton, left + buttonWidth + gap, secondActionRow, buttonWidth);
-			this.place(this.deleteButton, left + (buttonWidth + gap) * 2, secondActionRow, width - (buttonWidth + gap) * 2);
+			int firstRow = this.area.bottom() - 42;
+			int secondRow = this.area.bottom() - 22;
+			int actionWidth = (width - gap * 2) / 3;
+			int actionLeft = left + (width - actionWidth * 3 - gap * 2) / 2;
+			this.place(this.setActiveButton, actionLeft, firstRow, actionWidth);
+			this.place(this.renameButton, actionLeft + actionWidth + gap, firstRow, actionWidth);
+			this.place(this.addCurrentButton, actionLeft + (actionWidth + gap) * 2, firstRow, actionWidth);
+			int half = (width - gap) / 2;
+			this.place(this.mergeButton, left, secondRow, half);
+			this.place(this.deleteButton, left + half + gap, secondRow, width - half - gap);
+			listHeight = Math.max(40, firstRow - listTop - gap);
 		}
 
 		this.playerList.setX(left);

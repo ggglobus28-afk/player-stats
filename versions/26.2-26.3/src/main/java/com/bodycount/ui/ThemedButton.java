@@ -17,12 +17,19 @@ public class ThemedButton extends Button {
 	private static final Identifier DISABLED = Identifier.withDefaultNamespace("widget/button_disabled");
 	private static final Identifier HIGHLIGHTED = Identifier.withDefaultNamespace("widget/button_highlighted");
 
+	private boolean selected;
+
 	public ThemedButton(Component message, Runnable action) {
 		this(0, 0, 0, 0, message, action);
 	}
 
 	public ThemedButton(int x, int y, int width, int height, Component message, Runnable action) {
 		super(x, y, width, height, message, button -> action.run(), DEFAULT_NARRATION);
+	}
+
+	/** Marks the button that represents the current view. */
+	public void setSelected(boolean selected) {
+		this.selected = selected;
 	}
 
 	/**
@@ -44,22 +51,28 @@ public class ThemedButton extends Button {
 		int height = this.getHeight();
 
 		if (Theme.vanilla()) {
-			Identifier sprite = !this.active ? DISABLED : (this.isHoveredOrFocused() ? HIGHLIGHTED : NORMAL);
+			Identifier sprite = !this.active ? DISABLED
+				: (this.selected || this.isHoveredOrFocused() ? HIGHLIGHTED : NORMAL);
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, width, height);
+			if (this.selected) {
+				graphics.fill(x + 2, y + height - 2, x + width - 2, y + height - 1, 0xFFFFFFFF);
+			}
 			graphics.centeredText(font, this.getMessage(), x + width / 2, y + (height - 8) / 2,
 				this.active ? 0xFFFFFFFF : 0xFFA0A0A0);
 			return;
 		}
 
-		int background = this.active
-			? (this.isHoveredOrFocused() ? Theme.buttonHover() : Theme.button())
-			: Theme.buttonDisabled();
+		int background = !this.active ? Theme.buttonDisabled()
+			: (this.selected ? Theme.buttonHover() : (this.isHoveredOrFocused() ? Theme.buttonHover() : Theme.button()));
 		graphics.fill(x, y, x + width, y + height, background);
 		int border = this.active ? Theme.buttonBorder() : Theme.divider();
 		graphics.fill(x, y, x + width, y + 1, border);
 		graphics.fill(x, y + height - 1, x + width, y + height, border);
 		graphics.fill(x, y, x + 1, y + height, border);
 		graphics.fill(x + width - 1, y, x + width, y + height, border);
+		if (this.selected) {
+			graphics.fill(x + 1, y + height - 3, x + width - 1, y + height - 1, Theme.buttonBorder());
+		}
 		graphics.centeredText(font, this.getMessage(), x + width / 2, y + (height - 8) / 2,
 			this.active ? Theme.buttonText() : Theme.buttonTextDisabled());
 	}

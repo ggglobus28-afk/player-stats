@@ -14,16 +14,18 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 /**
- * Small scrolling list used for players, chat pairs and server profiles.
- * A row can carry an optional second line (for example the totem counters
- * shown under the player name).
+ * Scrolling list used for players, chat pairs and server profiles. It follows
+ * the vanilla statistics list: a small grey header, thin separator, plain rows
+ * with an icon, a name on the left and one value on the right. Rows can carry
+ * an optional second line, for example the totem counters under a name.
  */
 public class StatsListWidget extends AbstractWidget {
-	public static final int ROW_HEIGHT = 22;
-	public static final int TALL_ROW_HEIGHT = 30;
-	public static final int COMPACT_ROW_HEIGHT = 18;
-	private static final int HEADER_HEIGHT = 16;
+	public static final int ROW_HEIGHT = 20;
+	public static final int TALL_ROW_HEIGHT = 26;
+	public static final int COMPACT_ROW_HEIGHT = 16;
+	private static final int HEADER_HEIGHT = 14;
 	private static final int PADDING = 4;
+	private static final int SCROLLBAR_WIDTH = 6;
 
 	public static final class Row {
 		public final Component name;
@@ -150,14 +152,18 @@ public class StatsListWidget extends AbstractWidget {
 		int bottom = top + this.getHeight();
 
 		graphics.fill(left, top, right, bottom, Theme.background());
-		graphics.text(font, this.headerLeft, left + PADDING, top + 4, Theme.header(), false);
+
+		// Header sits on one line and is separated by a thin rule, like the
+		// vanilla statistics list.
+		graphics.text(font, this.headerLeft, left + PADDING, top + 3, Theme.header(), false);
 		if (this.headerRight != null && !this.headerRight.getString().isEmpty()) {
 			int width = font.width(this.headerRight);
-			graphics.text(font, this.headerRight, right - PADDING - width, top + 4, Theme.header(), false);
+			graphics.text(font, this.headerRight, right - PADDING - width, top + 3, Theme.header(), false);
 		}
 		graphics.fill(left, top + HEADER_HEIGHT - 1, right, top + HEADER_HEIGHT, Theme.divider());
 
 		int listTop = top + HEADER_HEIGHT;
+		int valueRight = right - PADDING - (this.maxScroll() > 0 ? SCROLLBAR_WIDTH : 0);
 		graphics.enableScissor(left, listTop, right, bottom);
 
 		Row hoveredRow = null;
@@ -166,7 +172,7 @@ public class StatsListWidget extends AbstractWidget {
 		boolean twoLines = this.tall && !compact();
 
 		if (this.rows.isEmpty()) {
-			graphics.centeredText(font, this.emptyText, (left + right) / 2, listTop + 14, Theme.header());
+			graphics.centeredText(font, this.emptyText, (left + right) / 2, listTop + 16, Theme.header());
 		} else {
 			for (int i = 0; i < this.rows.size(); i++) {
 				int rowTop = listTop + i * rowHeight - this.scroll;
@@ -176,14 +182,14 @@ public class StatsListWidget extends AbstractWidget {
 				boolean hovered = mouseX >= left && mouseX < right && mouseY >= rowTop && mouseY < rowTop + rowHeight
 					&& mouseY >= listTop && mouseY < bottom;
 				if (i == this.selected) {
-					graphics.fill(left, rowTop, right, rowTop + rowHeight - 1, Theme.selected());
+					graphics.fill(left + 1, rowTop, right - 1, rowTop + rowHeight - 1, Theme.selected());
 				} else if (hovered) {
-					graphics.fill(left, rowTop, right, rowTop + rowHeight - 1, Theme.hover());
+					graphics.fill(left + 1, rowTop, right - 1, rowTop + rowHeight - 1, Theme.hover());
 				}
 
 				Row row = this.rows.get(i);
 				int textLeft = left + PADDING;
-				if (icons && !row.icon.isEmpty()) {
+				if (icons && row.icon != null && !row.icon.isEmpty()) {
 					graphics.item(row.icon, left + PADDING, rowTop + (rowHeight - 16) / 2);
 					textLeft += 20;
 				}
@@ -191,13 +197,13 @@ public class StatsListWidget extends AbstractWidget {
 				int valueWidth = font.width(row.value);
 
 				if (twoLines && row.hasSubtitle()) {
-					graphics.text(font, row.name, textLeft, rowTop + 5, Theme.text(), false);
-					graphics.text(font, row.subtitle, textLeft, rowTop + 17, Theme.header(), false);
-					graphics.text(font, row.value, right - PADDING - valueWidth, rowTop + 11, valueColor, false);
+					graphics.text(font, row.name, textLeft, rowTop + 4, Theme.text(), false);
+					graphics.text(font, row.subtitle, textLeft, rowTop + 15, Theme.header(), false);
+					graphics.text(font, row.value, valueRight - valueWidth, rowTop + 8, valueColor, false);
 				} else {
 					int textY = rowTop + (rowHeight - 8) / 2;
 					graphics.text(font, row.name, textLeft, textY, Theme.text(), false);
-					graphics.text(font, row.value, right - PADDING - valueWidth, textY, valueColor, false);
+					graphics.text(font, row.value, valueRight - valueWidth, textY, valueColor, false);
 				}
 				if (hovered) {
 					hoveredRow = row;
@@ -208,12 +214,15 @@ public class StatsListWidget extends AbstractWidget {
 		graphics.disableScissor();
 
 		if (this.maxScroll() > 0) {
-			int trackTop = listTop;
-			int trackBottom = bottom;
-			int thumbHeight = Math.max(12, (int) (this.visibleHeight() / (float) this.contentHeight() * (trackBottom - trackTop)));
-			int thumbTop = trackTop + (int) (this.scroll / (float) this.maxScroll() * (trackBottom - trackTop - thumbHeight));
-			graphics.fill(right - 4, trackTop, right - 2, trackBottom, 0x40000000);
-			graphics.fill(right - 4, thumbTop, right - 2, thumbTop + thumbHeight, Theme.divider());
+			int trackTop = listTop + 1;
+			int trackBottom = bottom - 1;
+			int trackHeight = trackBottom - trackTop;
+			int thumbHeight = Math.max(10, (int) (this.visibleHeight() / (float) this.contentHeight() * trackHeight));
+			int thumbTop = trackTop + (int) (this.scroll / (float) this.maxScroll() * (trackHeight - thumbHeight));
+			graphics.fill(right - SCROLLBAR_WIDTH, trackTop, right - SCROLLBAR_WIDTH + 2, trackBottom,
+				Theme.vanilla() ? 0x30000000 : Theme.divider());
+			graphics.fill(right - SCROLLBAR_WIDTH, thumbTop, right - SCROLLBAR_WIDTH + 2, thumbTop + thumbHeight,
+				Theme.vanilla() ? 0x80808080 : Theme.divider());
 		}
 
 		if (hoveredRow != null && !hoveredRow.tooltip.isEmpty()) {
