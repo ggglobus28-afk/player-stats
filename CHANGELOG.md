@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.2
+
+- Fixed the mod buttons not responding to clicks. They now inherit the vanilla
+  button input handling; only the drawing is custom.
+- Buttons keep their normal height instead of being stretched by the statistics
+  screen layout, so they no longer overlap the list.
+- The default theme keeps the vanilla button look; other themes restyle buttons
+  as before.
+
 ## 1.2.1
 
 - Chat tab shows kill pairs only; chat totem rows and the related setting were
